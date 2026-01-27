@@ -1,0 +1,43 @@
+package store
+
+import (
+	"context"
+	"database/sql"
+)
+
+type User struct {
+	ID        string `json:"id"`
+	Username  string `json:"usernmae"`
+	Email     string `json:"email"`
+	Password  string `json:"-"`
+	CreatedAt string `json:"created_at"`
+}
+
+type UserStore struct {
+	db *sql.DB
+}
+
+func (userStore *UserStore) Create(ctx context.Context, user *User) error {
+	query := `
+		INSERT INTO users (usernmae, password, email)
+		VALUES ($1, $2, $3)
+		RETURNING id, created_at
+	`
+
+	err := userStore.db.QueryRowContext(
+		ctx,
+		query,
+		user.Username,
+		user.Password,
+		user.Email,
+	).Scan(
+		&user.ID,
+		&user.CreatedAt,
+	)
+
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
