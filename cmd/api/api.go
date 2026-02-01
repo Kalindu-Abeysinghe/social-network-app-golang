@@ -4,7 +4,6 @@ import (
 	"log"
 	"net/http"
 	"time"
-
 	"github.com/Kalindu-Abeysinghe/social-app.git/internal/store"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
@@ -18,6 +17,8 @@ type application struct {
 type config struct {
 	address string
 	db      dbConfig
+	env     string
+	version string
 }
 
 type dbConfig struct {
@@ -39,6 +40,13 @@ func (app *application) mount() http.Handler {
 
 	router.Route("/v1", func(subRouter chi.Router) {
 		subRouter.Get("/health", app.healthCheckHandler)
+
+		subRouter.Route("/posts", func(postsRouter chi.Router) {
+			postsRouter.Post("/", app.createPostHandler)
+			postsRouter.Route("/{postId}", func(r chi.Router) {
+				r.Get("/", app.getPostHandler)
+			})
+		})
 	})
 
 	return router
