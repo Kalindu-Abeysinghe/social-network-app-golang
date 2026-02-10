@@ -1,12 +1,12 @@
 package main
 
 import (
-	"log"
-	"net/http"
-	"time"
 	"github.com/Kalindu-Abeysinghe/social-app.git/internal/store"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
+	"log"
+	"net/http"
+	"time"
 )
 
 type application struct {
@@ -44,8 +44,11 @@ func (app *application) mount() http.Handler {
 		subRouter.Route("/posts", func(postsRouter chi.Router) {
 			postsRouter.Post("/", app.createPostHandler)
 			postsRouter.Route("/{postId}", func(r chi.Router) {
+				r.Use(app.postsContextMiddleware)
+
 				r.Get("/", app.getPostHandler)
 				r.Delete("/", app.deletePostHandler)
+				r.Patch("/", app.updatePostHandler)
 			})
 		})
 	})
