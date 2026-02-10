@@ -27,7 +27,7 @@ func (app *application) createPostHandler(w http.ResponseWriter, r *http.Request
 		app.badRequestError(w, r, err)
 		return
 	}
-	
+
 	post := &store.Post{
 		Title:   payload.Title,
 		Content: payload.Content,
@@ -66,6 +66,14 @@ func (app *application) getPostHandler(w http.ResponseWriter, r *http.Request) {
 		}
 		return
 	}
+
+	comments, err := app.store.Comments.GetByPostId(ctx, postId)
+	if err != nil {
+		app.internalServerError(w, r, err)
+		return
+	}
+	post.Comments = comments
+
 	if err := writeJson(w, http.StatusOK, &post); err != nil {
 		app.internalServerError(w, r, err)
 		return
