@@ -22,7 +22,7 @@ func main() {
 		version: env.GetString("VERSION", "0.0.0"),
 	}
 
-	db, err := db.New(
+	database, err := db.New(
 		cfg.db.addr,
 		cfg.db.maxOpenConnections,
 		cfg.db.maxOpenConnections,
@@ -32,10 +32,10 @@ func main() {
 		log.Panic(err)
 	}
 
-	defer db.Close()
+	defer database.Close()
 	log.Println("Database connection established")
 
-	store := store.NewStorage(db)
+	store := store.NewStorage(database)
 
 	app := &application{
 		config: cfg,
