@@ -34,7 +34,7 @@ func (commentsStore *CommentStore) GetByPostId(ctx context.Context, postId int64
 		return nil, err
 	}
 	defer rows.Close()
-	comments := []Comment{}
+	var comments []Comment
 	for rows.Next() {
 		var comment Comment
 		comment.User = User{}
@@ -53,4 +53,31 @@ func (commentsStore *CommentStore) GetByPostId(ctx context.Context, postId int64
 		comments = append(comments, comment)
 	}
 	return comments, nil
+}
+
+func (commentsStore *CommentStore) Create(ctx context.Context, comment *Comment) error {
+	query := `
+		INSERT INTO comments (post_id, user_id, content)
+		VALUES ($1, $2, $3)
+		RETURNING id, created_at
+	`
+
+	ctx, cancel := context.WithTimeout(ctx, QueryTimeoutDuration)
+	defer cancel()
+
+	err := commentsStore.db.QueryRowContext(
+		ctx,
+		query,
+		comment.PostID,
+		comment.UserID,
+		comment.Content,
+	).Scan(
+		&comment.ID,
+		&comment.CreatedAt,
+	)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
